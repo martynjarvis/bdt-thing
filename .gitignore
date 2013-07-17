@@ -37,3 +37,6 @@ logs/
 
 # backups
 *.bak
+
+# logs
+*.log
