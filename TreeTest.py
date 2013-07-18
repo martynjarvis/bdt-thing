@@ -5,16 +5,21 @@ from math import pi
 
 dt = Tree()
 
-a = np.random.normal(1, 1, 10).reshape(-1,1)
-b = np.random.normal(1, 1.5, 10).reshape(-1,1)
+samples = 50000
+
+a = np.random.normal(1, 1, samples).reshape(-1,1)
+b = np.random.normal(1, 1.5, samples).reshape(-1,1)
 signalSample     = np.hstack((a,b))
 
-c = np.random.normal(0, 1, 100).reshape(-1,1)
-d = np.random.normal(0, 1.5, 100).reshape(-1,1)
+c = np.random.normal(0, 1, samples).reshape(-1,1)
+d = np.random.normal(0, 1.5, samples).reshape(-1,1)
 backgroundSample     = np.hstack((c,d))
 
 dt.load(signalSample,backgroundSample)
 dt.build()
 
-test = np.array((1.,1.))
-print dt.classify(test)
+dt.draw()
+test_sig = np.array((1.,1.))
+print dt.classify(test_sig)
+test_bkg = np.array((0.,0.))
+print dt.classify(test_bkg)

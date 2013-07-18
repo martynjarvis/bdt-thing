@@ -36,3 +36,14 @@ class Node():
     def setCuts(self,var,val):
         self.cutVar = var
         self.cutVal = val
+
+    def draw(self,tabs=0):
+    	if self.leaf==True :
+    		if self.retVal == 1 :
+    			print  tabs*"    ","Signal Leaf"
+    		else :
+    			print  tabs*"    ","Background Leaf"
+    		return
+    	print tabs*"    ", self.cutVar, self.cutVal
+    	self.left.draw(tabs+1)
+    	self.right.draw(tabs+1)
