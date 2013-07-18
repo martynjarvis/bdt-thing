@@ -7,27 +7,32 @@ class Tree():
     """
     represents the tree
     """
+    
 
     def __init__(self, *items, **kw):
         """
         Create a Decision Tree
         """
         # Paramaters
-        self.maxNodes = 10000
+        self.maxNodes = 1000
         self.nCuts = 20
         self.nEventsMin = -1
+        self.maxDepth = 5
         self.rootNode = None
 
         # Counting stuff
         self.nNodes = 0
 
 
-    def load(self,sigData,bkgData):
+    def load(self,sigData,bkgData,weights=None):
         """
         load the data samples that are used
         """
         self.sigData = sigData
         self.bkgData = bkgData
+        self.sigWeights = weights[0]
+        self.bkgWeights = weights[1]
+        #print weights[0]
 
         self.nVars = sigData.shape[1]
         self.nSig = sigData.shape[0]
@@ -47,6 +52,7 @@ class Tree():
             node = Node()
             self.rootNode = node
             self.rootNode.root = True
+            self.rootNode.depth = 0
             self.nNodes +=1
 
         if sigMask == None :
@@ -59,11 +65,15 @@ class Tree():
         if self.nNodes >= self.maxNodes :
             leafNode = True
 
+        if node.depth >= self.maxDepth : 
+            leafNode = True
+
         sigEvents = long(np.sum(sigMask))
         bkgEvents = long(np.sum(bkgMask))
 
         if sigEvents + bkgEvents < 2*self.nEventsMin:
             leafNode = True
+
         if sigEvents<=0 or  bkgEvents<=0:
             leafNode = True
 
@@ -73,7 +83,7 @@ class Tree():
                 node.retVal = 1
                 #print "signal"
             else :
-                node.retVal = 0
+                node.retVal = -1
                 #print "background"
             return 
 
@@ -89,11 +99,12 @@ class Tree():
                 min(self.bkgData[bkgMask,var].min(),self.sigData[sigMask,var].min()),
                 max(self.bkgData[bkgMask,var].max(),self.sigData[sigMask,var].max())
                 )
-
-            bkgHist, bins = np.histogram(self.bkgData[bkgMask,var],self.nCuts,range=histRange)
+            #print len(self.bkgWeights),len(self.bkgData[bkgMask,var])
+            bkgHist, bins = np.histogram(self.bkgData[bkgMask,var],self.nCuts,
+                                           range=histRange,weights=self.bkgWeights[bkgMask])
             bkgYield = np.cumsum(bkgHist, dtype=float)
 
-            sigHist, bins = np.histogram(self.sigData[sigMask,var],bins)
+            sigHist, bins = np.histogram(self.sigData[sigMask,var],bins,weights=self.sigWeights[sigMask])
             sigYield = np.cumsum(sigHist, dtype=float)
 
             leftIndex = vecWeightedGini(sigYield,bkgYield)
@@ -116,10 +127,12 @@ class Tree():
         leftnode = Node()
         leftnode.parent = node
         node.left = leftnode
+        node.left.depth = node.depth+1
 
         rightnode = Node()
         rightnode.parent = node
         node.right = rightnode
+        node.right.depth = node.depth+1
 
         sigMaskLeft = np.copy(sigMask)
         sigMaskRight = np.copy(sigMask)
@@ -142,6 +155,14 @@ class Tree():
 
     def classify(self, event):
         return self.rootNode.classify(event)
+
+    
+    def classifyEvents(self, events):
+        results = np.array([
+                self.rootNode.classify(event) for event in events])
+        return results
+
+    
 
     def draw(self):
         print "Printing Tree:"

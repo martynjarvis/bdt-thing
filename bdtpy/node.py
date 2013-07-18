@@ -14,16 +14,16 @@ class Node():
         self.right = None
         self.root = False
         self.leaf = False
+        self.depth = 0 # 0 is root node
 
         # cuts the node applies
         self.cutVar = -1
         self.cutVal = -1.0
 
         # the values the node return if its a leaf
-        self.retVal = -1 # 1 if signal, 0 if bkg
+        self.retVal = 0 # 1 if signal, -1 if bkg
 
     def classify(self,event):
-
         if self.leaf :
             return self.retVal
 
