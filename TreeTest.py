@@ -1,25 +1,38 @@
 from bdtpy.tree import Tree
 import numpy as np
 from math import pi
+import matplotlib.mlab as mlab
+import matplotlib.pyplot as plt
+
 #import random
 
 dt = Tree()
 
-samples = 50000
+def f(x,y):
+    return dt.classify(np.array((x,y)))
 
-a = np.random.normal(1, 1, samples).reshape(-1,1)
-b = np.random.normal(1, 1.5, samples).reshape(-1,1)
-signalSample     = np.hstack((a,b))
+samples = 5000
 
-c = np.random.normal(0, 1, samples).reshape(-1,1)
-d = np.random.normal(0, 1.5, samples).reshape(-1,1)
-backgroundSample     = np.hstack((c,d))
+x1 = np.random.normal(1, 2, samples).reshape(-1,1)
+y1 = np.random.normal(1, 2, samples).reshape(-1,1)
+signalSample     = np.hstack((x1,y1))
+
+x2 = np.random.normal(-1, 2, samples).reshape(-1,1)
+y2 = np.random.normal(-1, 2, samples).reshape(-1,1)
+backgroundSample     = np.hstack((x2,y2))
 
 dt.load(signalSample,backgroundSample)
 dt.build()
 
-dt.draw()
-test_sig = np.array((1.,1.))
-print dt.classify(test_sig)
-test_bkg = np.array((0.,0.))
-print dt.classify(test_bkg)
+delta = 0.025
+x = y = np.arange(-3.0, 3.0, delta)
+X, Y = np.meshgrid(x, y)
+
+vecF = np.vectorize(f)
+
+Z = vecF(X,Y)
+
+im = plt.imshow(Z,origin='lower', cmap='bone',extent=[-3,3,-3,3])
+# interpolation='bilinear',
+plt.colorbar(shrink=.92)
+plt.show()

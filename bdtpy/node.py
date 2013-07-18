@@ -1,5 +1,4 @@
 
-
 class Node():
     """
     represents a branch in the tree

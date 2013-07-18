@@ -59,13 +59,8 @@ class Tree():
         if self.nNodes >= self.maxNodes :
             leafNode = True
 
-
         sigEvents = long(np.sum(sigMask))
         bkgEvents = long(np.sum(bkgMask))
-        
-        #print "~~~~"
-        #print sigMask
-        #print sigEvents,bkgEvents
 
         if sigEvents + bkgEvents < 2*self.nEventsMin:
             leafNode = True
@@ -87,9 +82,8 @@ class Tree():
         bestCutVal = -1.
         
         parentIndex = weightedGini(sigEvents,bkgEvents)
-        #print parentIndex
+
         for var in xrange(self.nVars) :
-            #print "var",var
 
             histRange = (
                 min(self.bkgData[bkgMask,var].min(),self.sigData[sigMask,var].min()),
@@ -102,24 +96,11 @@ class Tree():
             sigHist, bins = np.histogram(self.sigData[sigMask,var],bins)
             sigYield = np.cumsum(sigHist, dtype=float)
 
-            # 
-            #print type(sigMask)
-
-            #print sigHist
-            #print bkgHist
-
-            #print sigYield
-            #print bkgYield
-
-
-            #rightIndex = gini(sigYield,bkgYield)
-            #leftIndex
-
             leftIndex = vecWeightedGini(sigYield,bkgYield)
             rightIndex = vecWeightedGini(sigEvents-sigYield,bkgEvents-bkgYield)
             
             diff = (parentIndex - leftIndex - rightIndex)/(sigEvents+bkgEvents)
-            #print diff
+
             maxInd = diff[:-1].argmax()
             if diff[maxInd] >= bestGini  : #
                 bestGini = diff[maxInd]
@@ -140,8 +121,6 @@ class Tree():
         rightnode.parent = node
         node.right = rightnode
 
-        # Problem! the masks are initialised correctly, passed a first time correctly, but on the second
-        # time they become python lists I think (I'm an idiot and doing the inline shit)
         sigMaskLeft = np.copy(sigMask)
         sigMaskRight = np.copy(sigMask)
         for i in xrange(self.nSig):
