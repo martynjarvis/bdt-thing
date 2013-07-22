@@ -27,32 +27,35 @@ class BDT():
         self.nBkg = bkgData.shape[0]
 
     def build(self):
+        """
+        Build each tree in the 'forest' of trees. After each iteration, evaluate the tree 
+        and reweight the input sample such that incorrect events are weighted up and correct
+        events are weighted down
+        """
         # weights to apply to training samples, updated on each
-        # iteration of the boosting algo
+        # iteration of the boosting algo, normalised to 1
         sigWeights = np.ones(self.nSig, dtype=float)
         bkgWeights = np.ones(self.nBkg, dtype=float)
         reweight = 1.0/(np.sum(sigWeights)+np.sum(bkgWeights))
         sigWeights *= reweight
         bkgWeights *= reweight 
 
+        # Weight of each tree, strong classifers have higher weight
         self.treeWeights = np.zeros(self.ntrees, dtype=float)
 
         for i in xrange(self.ntrees):
 
-            #Build new tree
-            #sigWeights
+            # build new tree
             newTree = Tree()
             newTree.load(self.sigData,self.bkgData,weights=(sigWeights,bkgWeights))
             newTree.build()
             self.dTrees.append(newTree) 
 
-            # evaluate tree
+            # evaluate trees
+            # keep track of each event
             err = 0.0
-
             sigWrong = np.zeros(self.nSig)
             bkgWrong = np.zeros(self.nBkg)
-
-            #print sigWeights
 
             for j in range(self.nSig):
                 if newTree.classify(np.array((self.sigData[j,])))<0:
@@ -74,6 +77,7 @@ class BDT():
 
             self.treeWeights[i] = alpha
 
+            # reweight training samples
             for j in range(self.nSig):
                 if sigWrong[j]:
                     sigWeights[j]*=wrongFactor
@@ -92,11 +96,14 @@ class BDT():
             bkgWeights *= reweight
 
     def classify(self, event):
+        """
+        classify a given event. Iterates over each tree in the forest and then
+        returns the weighted average of the results
+        """
 
         results = np.zeros(self.ntrees, dtype=float)
 
         for i,dt in enumerate(self.dTrees):
-            #results[i] = math.log(self.treeWeights[i])*dt.classify(event)
             results[i] = self.treeWeights[i]*dt.classify(event)
 
         return np.sum(results)*(1.0/np.sum(self.treeWeights))

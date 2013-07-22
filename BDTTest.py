@@ -10,7 +10,7 @@ def f(x,y):
     return bdt.classify(np.array((x,y)))
 vecF = np.vectorize(f)
 
-samples = 5000
+samples = 1000
 
 x1 = np.random.normal(1, 2, samples).reshape(-1,1)
 y1 = np.random.normal(1, 2, samples).reshape(-1,1)

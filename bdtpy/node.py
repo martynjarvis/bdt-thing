@@ -8,7 +8,7 @@ class Node():
         """
         Create a Node
         """
-        #print "Init node."
+        # Tree parameters
         self.parent = None
         self.left = None
         self.right = None
@@ -16,14 +16,18 @@ class Node():
         self.leaf = False
         self.depth = 0 # 0 is root node
 
-        # cuts the node applies
+        # Node parameters (only set if node is not leaf)
         self.cutVar = -1
         self.cutVal = -1.0
 
-        # the values the node return if its a leaf
+        # Leaf parameters (only set if node is leaf)
         self.retVal = 0 # 1 if signal, -1 if bkg
 
     def classify(self,event):
+        """
+        Classify an event. If a leaf node, return retval otherwise apply 
+        cuts and return daughter nodee
+        """
         if self.leaf :
             return self.retVal
 
@@ -33,10 +37,16 @@ class Node():
             return self.right.classify(event)
 
     def setCuts(self,var,val):
+        """
+        Save cut values on node
+        """
         self.cutVar = var
         self.cutVal = val
 
     def draw(self,tabs=0):
+        """
+        print node, indention is given by depth in node
+        """
     	if self.leaf==True :
     		if self.retVal == 1 :
     			print  tabs*"    ","Signal Leaf"
